@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caleb's Taco Truck</title>
+<style>
+    body {
+        font-family: 'Helvetica', sans-serif;
+        background: #fff8f0;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background: #ff6f3c;
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .truck-container {
+        display: flex;
+        justify-content: center;
+        margin: 2rem;
+    }
+    .menu {
+        max-width: 800px;
+        margin: 2rem auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    .item {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .item:hover {
+        transform: translateY(-5px);
+    }
+    .item img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+    .item .info {
+        padding: 1rem;
+    }
+    .item .info h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+    .item .info p {
+        margin: 0.5rem 0;
+        color: #555;
+    }
+    .item .info .price {
+        font-weight: bold;
+        color: #ff6f3c;
+    }
+    footer {
+        text-align: center;
+        padding: 2rem;
+        color: #888;
+        font-size: 0.9rem;
+    }
+</style>
+</head>
+<body>
+<header>Caleb's Taco Truck</header>
+
+<div class="truck-container">
+    <img src="calebs-taco-truck.png">
+</div>
+
+<section class="menu">
+    <div class="item">
+        <img src="taco.png" alt="Taco 1">
+        <div class="info">
+            <h3>Classic Taco</h3>
+            <p>Delicious beef with fresh toppings.</p>
+            <p class="price">$3.50</p>
+        </div>
+    </div>
+    <div class="item">
+        <img src="taco.png" alt="Taco 2">
+        <div class="info">
+            <h3>Veggie Taco</h3>
+            <p>Grilled vegetables with salsa verde.</p>
+            <p class="price">$3.00</p>
+        </div>
+    </div>
+    <div class="item">
+        <img src="taco.png" alt="Taco 3">
+        <div class="info">
+            <h3>Spicy Chicken Taco</h3>
+            <p>Marinated chicken with jalapeños.</p>
+            <p class="price">$4.00</p>
+        </div>
+    </div>
+    <div class="item">
+        <img width="20%" height="20%" src="taco.png" alt="Taco 4">
+        <div class="info">
+            <h3>Fish Taco</h3>
+            <p>Fresh fish with tangy slaw.</p>
+            <p class="price">$4.50</p>
+        </div>
+    </div>
+</section>
+
+<footer>&copy; 2025 Caleb's Taco Truck</footer>
+</body>
+</html>
