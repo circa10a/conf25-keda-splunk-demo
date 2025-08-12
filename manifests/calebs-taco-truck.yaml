@@ -1,0 +1,77 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      targetPort: web
+      name: web-svc
+  selector:
+    app: nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+          - name: nginx-logs
+            mountPath: /var/log/nginx
+      - name: splunk-uf
+        image: splunk/universalforwarder:9.2
+        env:
+          - name: SPLUNK_START_ARGS
+            value: --accept-license
+          - name: SPLUNK_GENERAL_TERMS
+            value: --accept-sgt-current-at-splunk-com
+          - name: SPLUNK_PASSWORD
+            value: password
+          - name: SPLUNK_CMD
+            value: add monitor /var/log/nginx/access.log
+          - name: SPLUNK_STANDALONE_URL
+            value: splunk.default.svc.cluster.local
+        volumeMounts:
+          - name: nginx-logs
+            mountPath: /var/log/nginx
+      volumes:
+      - name: nginx-logs
+        emptyDir: {}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: splunk-scaledobject
+spec:
+  pollingInterval: 15
+  minReplicaCount: 1
+  maxReplicaCount: 3
+  scaleTargetRef:
+    name: nginx
+  triggers:
+  - type: splunk
+    authenticationRef:
+      name: splunk-auth
+    metadata:
+      host: https://splunk.default.svc.cluster.local:8089
+      unsafeSsl: "true"
+      targetValue: "10"
+      savedSearchName: my-saved-search-name
+      valueField: count
