@@ -1,0 +1,108 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: splunkconf
+data:
+  default.yml: |
+    splunk:
+      conf:
+        - key: savedsearches
+          value:
+            directory: /opt/splunk/etc/users/admin/search/local
+            content:
+              taco-truck-customers:
+                action.email.useNSSubject: 1
+                action.webhook.enable_allowlist: 0
+                alert.track: 0
+                cron_schedule: '*/1 * * * *'
+                dispatch.earliest_time: -5m
+                dispatch.latest_time: now
+                display.general.type: statistics
+                display.page.search.tab: statistics
+                display.visualizations.show: 0
+                enableSched: 1
+                request.ui_dispatch_app: search
+                request.ui_dispatch_view: search
+                search: source="/var/log/nginx/access.log" | rex "^(?<client_ip>[^ ]+)" | where client_ip!="-" | dedup client_ip | stats count
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: splunk-creds
+data:
+  username: YWRtaW4= # "admin"
+  password: cGFzc3dvcmQ= # "password"
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: splunk-auth
+spec:
+  secretTargetRef:
+    - parameter: username
+      name: splunk-creds
+      key: username
+    - parameter: password
+      name: splunk-creds
+      key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: splunk
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8000
+      targetPort: web
+      name: web-svc
+    - port: 8089
+      targetPort: 8089
+      name: api-svc
+    - port: 9997
+      targetPort: ingest
+      name: ingest-svc
+  selector:
+    app: splunk
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: splunk
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: splunk
+  template:
+    metadata:
+      labels:
+        app: splunk
+    spec:
+      containers:
+      - name: splunk
+        image: splunk/splunk:10.0
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8000
+            name: web
+          - containerPort: 8089
+            name: api
+          - containerPort: 9997
+            name: ingest
+        env:
+          - name: SPLUNK_START_ARGS
+            value: --accept-license
+          - name: SPLUNK_GENERAL_TERMS
+            value: --accept-sgt-current-at-splunk-com
+          - name: SPLUNK_PASSWORD
+            value: password
+        volumeMounts:
+          - name: splunkconf-volume
+            mountPath: /tmp/defaults
+      volumes:
+      - name: splunkconf-volume
+        configMap:
+          name: splunkconf
